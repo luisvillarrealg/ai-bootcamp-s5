@@ -58,3 +58,23 @@ todo.completed = !todo.completed;
 ```
 
 **Related files:** `packages/backend/src/app.js` (PATCH `/api/todos/:id/toggle`).
+
+### Pattern: Lint fixes for dead code and startup logging
+
+**Context:** Backend ESLint (`no-unused-vars` as error, `no-console` as warn).
+
+**Problem:** Leftover debug variables and `console.log` in `src/index.js` fail or pollute lint.
+
+**Solution:** Delete unused variables instead of silencing them; write startup output with `process.stdout.write` (no extra dependency) until a real logger is introduced.
+
+**Example:**
+
+```js
+// ❌ no-console
+console.log(`Server running on port ${PORT}`);
+
+// ✅
+process.stdout.write(`Server running on port ${PORT}\n`);
+```
+
+**Related files:** `packages/backend/src/app.js`, `packages/backend/src/index.js`.
