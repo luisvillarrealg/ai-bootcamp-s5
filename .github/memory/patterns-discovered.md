@@ -38,3 +38,23 @@ const getAll = () => todos.map((t) => ({ ...t })); // returns []
 ```
 
 **Related files:** backend service and route modules for todos; corresponding Jest tests (see [docs/testing-guidelines.md](../../docs/testing-guidelines.md)).
+
+### Pattern: Toggle by negation (not by assignment)
+
+**Context:** Endpoints that flip a boolean such as `completed`.
+
+**Problem:** Assigning a constant (`todo.completed = true`) only works in one direction, so toggling back to incomplete never happens.
+
+**Solution:** Negate the current value and always look up the item by id first, returning 404 when it is missing.
+
+**Example:**
+
+```js
+// ❌ Never toggles back
+todo.completed = true;
+
+// ✅ Toggles
+todo.completed = !todo.completed;
+```
+
+**Related files:** `packages/backend/src/app.js` (PATCH `/api/todos/:id/toggle`).
