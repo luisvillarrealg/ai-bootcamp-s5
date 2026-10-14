@@ -78,3 +78,41 @@ process.stdout.write(`Server running on port ${PORT}\n`);
 ```
 
 **Related files:** `packages/backend/src/app.js`, `packages/backend/src/index.js`.
+
+### Pattern: React Query + fetch error handling
+
+**Context:** Frontend data fetching/mutations with `@tanstack/react-query`.
+
+**Problem:** `fetch` does not reject on HTTP 4xx/5xx, so React Query never enters its error state and the UI silently shows nothing.
+
+**Solution:** Wrap `fetch` in one helper that throws when `!response.ok`, use it for the query and every mutation, and render an MUI `<Alert severity="error">` from `isError` / `mutation.isError`. Use a relative API URL (`/api/todos`) so the CRA `proxy` works.
+
+**Example:**
+
+```js
+const requestJson = async (url, options) => {
+  const response = await fetch(url, options);
+  if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+  return response.json();
+};
+```
+
+**Related files:** `packages/frontend/src/App.js`.
+
+### Pattern: Testing UI with a stateful fetch fake
+
+**Context:** React Testing Library tests for components that refetch after mutations.
+
+**Problem:** Static `fetch` mocks return the same list after a delete/edit, so post-mutation UI cannot be asserted.
+
+**Solution:** Use a small in-memory fake API (`mockApi(initialTodos)`) that handles GET/POST/PUT/PATCH/DELETE; give mocks an `ok` flag so the error path is testable. Give icon buttons and checkboxes `aria-label`s (`Edit <title>`, `Delete <title>`, `Toggle <title>`) and query by role.
+
+**Related files:** `packages/frontend/src/__tests__/App.test.js`.
+
+### Pattern: Playwright against a shared in-memory backend
+
+**Context:** UI tests share one backend process whose store is not reset between tests.
+
+**Solution:** Page Object (`tests/ui/pages/TodoPage.js`), unique titles per test, clean up created todos, never assert absolute counts, and simulate API failure with `page.route(..., route => route.abort())`.
+
+**Related files:** `packages/frontend/tests/ui/todo.spec.js`.
